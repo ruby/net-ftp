@@ -1,4 +1,8 @@
-require_relative 'lib/net/ftp/version'
+begin
+  require_relative 'lib/net/ftp/version'
+rescue LoadError # Fallback to load version file in ruby core repository
+  require_relative "version"
+end
 
 Gem::Specification.new do |spec|
   spec.name          = "net-ftp"
