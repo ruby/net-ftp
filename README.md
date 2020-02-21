@@ -1,8 +1,9 @@
-# Net::Ftp
+# Net::FTP
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/net/ftp`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+This class implements the File Transfer Protocol.  If you have used a
+command-line FTP program, and are familiar with the commands, you will be
+able to use this class easily.  Some extra features are included to take
+advantage of Ruby's style and strengths.
 
 ## Installation
 
@@ -22,7 +23,27 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### Example 1
+
+```ruby
+ftp = Net::FTP.new('example.com')
+ftp.login
+files = ftp.chdir('pub/lang/ruby/contrib')
+files = ftp.list('n*')
+ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
+ftp.close
+```
+
+### Example 2
+
+```ruby
+Net::FTP.open('example.com') do |ftp|
+  ftp.login
+  files = ftp.chdir('pub/lang/ruby/contrib')
+  files = ftp.list('n*')
+  ftp.getbinaryfile('nif.rb-0.91.gz', 'nif.gz', 1024)
+end
+```
 
 ## Development
 
@@ -32,5 +53,4 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/hsbt/net-ftp.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com/ruby/net-ftp.
