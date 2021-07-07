@@ -20,7 +20,13 @@ class FTPTest < Test::Unit::TestCase
   SERVER_CERT = File.expand_path("../fixtures/server.crt", __dir__)
 
   def mjit_enabled?
-    (defined?(RubyVM::JIT) && RubyVM::JIT.enabled?) or (defined?(RubyVM::MJIT) && RubyVM::MJIT.enabled?)
+    if defined?(RubyVM::JIT)
+      RubyVM::JIT.enabled?
+    elsif defined?(RubyVM::MJIT)
+      RubyVM::MJIT.enabled?
+    else
+      false
+    end
   end
 
   def setup
