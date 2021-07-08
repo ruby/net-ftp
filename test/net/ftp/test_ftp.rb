@@ -100,40 +100,6 @@ class FTPTest < Test::Unit::TestCase
     assert_equal("10.0.0.1", host)
   end
 
-  def test_parse228
-    ftp = Net::FTP.new
-    host, port = ftp.send(:parse228, "228 Entering Long Passive Mode (4,4,192,168,0,1,2,12,34)")
-    assert_equal("192.168.0.1", host)
-    assert_equal(3106, port)
-    host, port = ftp.send(:parse228, "228 Entering Long Passive Mode (6,16,16,128,0,0,0,0,0,0,0,8,8,0,32,12,65,122,2,12,34)")
-    assert_equal("1080:0000:0000:0000:0008:0800:200c:417a", host)
-    assert_equal(3106, port)
-    assert_raise(Net::FTPReplyError) do
-      ftp.send(:parse228, "500 Syntax error")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Passive Mode")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Long Passive Mode (6,4,192,168,0,1,2,12,34)")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Long Passive Mode (4,4,192,168,0,1,3,12,34,56)")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Long Passive Mode (4,16,16,128,0,0,0,0,0,0,0,8,8,0,32,12,65,122,2,12,34)")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Long Passive Mode (6,16,16,128,0,0,0,0,0,0,0,8,8,0,32,12,65,122,3,12,34,56)")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse228, "228 Entering Long Passive Mode (6,16,16,128,0,0,0,0,0,0,0,8,8,0,32,12,65,122,2,12,34,56)")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse227, "227 ) foo bar (")
-    end
-  end
-
   def test_parse229
     ftp = Net::FTP.new
     sock = OpenStruct.new
@@ -2652,7 +2618,6 @@ EOF
 
   def test_use_pasv_invalid_ip
     commands = []
-    binary_data = (0..0xff).map {|i| i.chr}.join * 4 * 3
     server = create_ftp_server(nil, "127.0.0.1") { |sock|
       sock.print("220 (test_ftp).\r\n")
       commands.push(sock.gets)
