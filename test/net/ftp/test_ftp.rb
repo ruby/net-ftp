@@ -2654,19 +2654,19 @@ EOF
   end
 
   def test_debug_print
-    debug_stream = StringIO.new
+    [StringIO.new, Tempfile.new].each do |debug_stream|
+      ftp = Net::FTP.new
+      ftp.debug_output = debug_stream
 
-    ftp = Net::FTP.new
-    ftp.debug_output = debug_stream
+      ftp.debug_print("Test")
+      debug_stream.rewind
+      assert_equal(debug_stream.read, "")
 
-    ftp.debug_print("Test")
-    debug_stream.rewind
-    assert_equal(debug_stream.read, "")
-
-    ftp.debug_mode = true
-    ftp.debug_print("Test")
-    debug_stream.rewind
-    assert_equal(debug_stream.read, "Test\n")
+      ftp.debug_mode = true
+      ftp.debug_print("Test")
+      debug_stream.rewind
+      assert_equal(debug_stream.read, "Test\n")
+    end
   end
 
   private
