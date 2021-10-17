@@ -106,6 +106,11 @@ module Net
     # to +$stdout+.  Default: +false+.
     attr_accessor :debug_mode
 
+    # Sets or retrieves the output stream for debugging.
+    # Output stream will be used only when +debug_mode+ is set to true.
+    # The default value is +$stdout+.
+    attr_accessor :debug_output
+
     # Sets or retrieves the +resume+ status, which decides whether incomplete
     # transfers are resumed or restarted.  Default: +false+.
     attr_accessor :resume
@@ -267,6 +272,7 @@ module Net
       else
         @debug_mode = options[:debug_mode]
       end
+      @debug_output = $stdout
       @resume = false
       @bare_sock = @sock = NullSocket.new
       @logged_in = false
@@ -378,9 +384,7 @@ module Net
     # <tt>Errno::ECONNREFUSED</tt>) if the connection cannot be established.
     #
     def connect(host, port = FTP_PORT)
-      if @debug_mode
-        print "connect: ", host, ", ", port, "\n"
-      end
+      debug_print "connect: #{host}:#{port}"
       synchronize do
         @host = host
         @bare_sock = open_socket(host, port)
@@ -430,9 +434,7 @@ module Net
     # Ensures that +line+ has a control return / line feed (CRLF) and writes
     # it to the socket.
     def putline(line) # :nodoc:
-      if @debug_mode
-        print "put: ", sanitize(line), "\n"
-      end
+      debug_print "put: #{sanitize(line)}"
       if /[\r\n]/ =~ line
         raise ArgumentError, "A line must not contain CR or LF"
       end
@@ -445,9 +447,7 @@ module Net
     def getline # :nodoc:
       line = @sock.readline # if get EOF, raise EOFError
       line.sub!(/(\r\n|\n|\r)\z/n, "")
-      if @debug_mode
-        print "get: ", sanitize(line), "\n"
-      end
+      debug_print "get: #{sanitize(line)}"
       return line
     end
     private :getline
@@ -1247,7 +1247,7 @@ module Net
     #
     def abort
       line = "ABOR" + CRLF
-      print "put: ABOR\n" if @debug_mode
+      debug_print "put: ABOR"
       @sock.send(line, Socket::MSG_OOB)
       resp = getmultiline
       unless ["426", "226", "225"].include?(resp[0, 3])
@@ -1267,7 +1267,7 @@ module Net
       if /[\r\n]/ =~ line
         raise ArgumentError, "A line must not contain CR or LF"
       end
-      print "put: #{line}\n" if @debug_mode
+      debug_print "put: #{line}"
       @sock.send(line + CRLF, Socket::MSG_OOB)
       return getresp
     end
@@ -1446,6 +1446,13 @@ module Net
       return resp.slice(/"(([^"]|"")*)"/, 1).to_s.gsub(/""/, '"')
     end
     private :parse257
+
+    #
+    # Writes debug message to the debug output stream
+    #
+    def debug_print(msg)
+      @debug_output << msg + "\n" if @debug_mode && @debug_output
+    end
 
     # :stopdoc:
     class NullSocket
