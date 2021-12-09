@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Support for the File Transfer Protocol.}
   spec.description   = %q{Support for the File Transfer Protocol.}
   spec.homepage      = "https://github.com/ruby/net-ftp"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.6.0")
   spec.licenses      = ["Ruby", "BSD-2-Clause"]
 
   spec.metadata["homepage_uri"] = spec.homepage
