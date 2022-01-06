@@ -200,6 +200,8 @@ module Net
     #             as parameters.
     # private_data_connection::  If true, TLS is used for data connections.
     #                            Default: +true+ when +options+[:ssl] is true.
+    # implicit_ftps::  If true, TLS is established on initial connection.
+    #                  Default: +false+
     # username::  Username for login.  If +options+[:username] is the string
     #             "anonymous" and the +options+[:password] is +nil+,
     #             "anonymous@" is used as a password.
@@ -253,6 +255,11 @@ module Net
         else
           @private_data_connection = options[:private_data_connection]
         end
+        if options[:implicit_ftps].nil?
+          @implicit_ftps = false
+        else
+          @implicit_ftps = options[:implicit_ftps]
+        end
       else
         @ssl_context = nil
         if options[:private_data_connection]
@@ -260,6 +267,11 @@ module Net
             "private_data_connection can be set to true only when ssl is enabled"
         end
         @private_data_connection = false
+        if options[:implicit_ftps]
+          raise ArgumentError,
+                "implicit_ftps can be set to true only when ssl is enabled"
+        end
+        @implicit_ftps = false
       end
       @binary = true
       if options[:passive].nil?
@@ -388,13 +400,13 @@ module Net
       synchronize do
         @host = host
         @bare_sock = open_socket(host, port)
-        @sock = BufferedSocket.new(@bare_sock, read_timeout: @read_timeout)
-        voidresp
         if @ssl_context
           begin
-            voidcmd("AUTH TLS")
-            ssl_sock = start_tls_session(@bare_sock)
-            @sock = BufferedSSLSocket.new(ssl_sock, read_timeout: @read_timeout)
+            unless @implicit_ftps
+              set_socket(BufferedSocket.new(@bare_sock, read_timeout: @read_timeout))
+              voidcmd("AUTH TLS")
+            end
+            set_socket(BufferedSSLSocket.new(start_tls_session(@bare_sock), read_timeout: @read_timeout), @implicit_ftps)
             if @private_data_connection
               voidcmd("PBSZ 0")
               voidcmd("PROT P")
@@ -403,6 +415,8 @@ module Net
             @sock.close
             raise
           end
+        else
+          set_socket(BufferedSocket.new(@bare_sock, read_timeout: @read_timeout))
         end
       end
     end
