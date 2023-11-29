@@ -2642,7 +2642,9 @@ EOF
         assert_match(/\AUSER /, commands.shift)
         assert_match(/\APASS /, commands.shift)
         assert_equal("TYPE I\r\n", commands.shift)
-        assert_raise(SocketError) do
+
+        error_klass = defined?(Socket::ResolutionError) ? Socket::ResolutionError : SocketError
+        assert_raise(error_klass) do
           ftp.getbinaryfile("foo", nil)
         end
       ensure
