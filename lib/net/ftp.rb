@@ -577,8 +577,9 @@ module Net
           if !resp.start_with?("1")
             raise FTPReplyError, resp
           end
-        ensure
-          conn.close if conn && $!
+        rescue
+          conn&.close
+          raise
         end
       else
         sock = makeport
