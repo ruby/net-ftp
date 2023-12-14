@@ -577,7 +577,7 @@ module Net
           if !resp.start_with?("1")
             raise FTPReplyError, resp
           end
-        rescue
+        rescue Exception
           conn&.close
           raise
         end
