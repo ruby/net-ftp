@@ -1397,7 +1397,7 @@ module Net
       if !resp.start_with?("227")
         raise FTPReplyError, resp
       end
-      if m = /\((?<host>\d+(?:,\d+){3}),(?<port>\d+,\d+)\)/.match(resp)
+      if m = /(?<host>\d+(?:,\d+){3}),(?<port>\d+,\d+)/.match(resp)
         if @use_pasv_ip
           host = parse_pasv_ipv4_host(m["host"])
         else

@@ -75,14 +75,14 @@ class FTPTest < Test::Unit::TestCase
     host, port = ftp.send(:parse227, "227 Entering Passive Mode (192,168,0,1,12,34)")
     assert_equal("192.168.0.1", host)
     assert_equal(3106, port)
+    host, port = ftp.send(:parse227, "227 192,168,0,1,12,34")
+    assert_equal("192.168.0.1", host)
+    assert_equal(3106, port)
     assert_raise(Net::FTPReplyError) do
       ftp.send(:parse227, "500 Syntax error")
     end
     assert_raise(Net::FTPProtoError) do
       ftp.send(:parse227, "227 Entering Passive Mode")
-    end
-    assert_raise(Net::FTPProtoError) do
-      ftp.send(:parse227, "227 Entering Passive Mode (192,168,0,1,12,34,56)")
     end
     assert_raise(Net::FTPProtoError) do
       ftp.send(:parse227, "227 Entering Passive Mode (192,168,0,1)")
