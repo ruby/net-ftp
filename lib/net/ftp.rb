@@ -563,6 +563,7 @@ module Net
     def transfercmd(cmd, rest_offset = nil) # :nodoc:
       if @passive
         host, port = makepasv
+        succeeded = false
         begin
           conn = open_socket(host, port)
           if @resume and rest_offset
@@ -577,9 +578,9 @@ module Net
           if !resp.start_with?("1")
             raise FTPReplyError, resp
           end
-        rescue Exception
-          conn&.close
-          raise
+          succeeded = true
+        ensure
+          conn&.close if !succeeded
         end
       else
         sock = makeport
