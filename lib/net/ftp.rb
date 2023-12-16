@@ -1343,7 +1343,7 @@ module Net
       end
 
       feats = []
-      resp.split("\n").each do |line|
+      resp.each_line do |line|
         next if !line.start_with?(' ') # skip status lines
 
         feats << line.strip
