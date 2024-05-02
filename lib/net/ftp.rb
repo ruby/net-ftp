@@ -1236,7 +1236,7 @@ module Net
     # @param arguments Array[String] to be sent verbatim to the remote ftp server
     #
     def quote(arguments)
-      voidcmd(arguments)
+      sendcmd(arguments)
     end
     alias literal quote
 
