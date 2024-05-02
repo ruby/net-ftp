@@ -77,6 +77,10 @@ module Net
   # - #rename
   # - #delete
   #
+  # == Mainframe User Support
+  # - #literal
+  # - #quote
+  #
   class FTP < Protocol
     include MonitorMixin
     if defined?(OpenSSL::SSL)
@@ -85,7 +89,7 @@ module Net
     end
 
     # :stopdoc:
-    VERSION = "0.3.4"
+    VERSION = "0.3.5"
     FTP_PORT = 21
     CRLF = "\r\n"
     DEFAULT_BLOCKSIZE = BufferedIO::BUFSIZE
@@ -1225,6 +1229,16 @@ module Net
       resp = sendcmd("MKD #{dirname}")
       return parse257(resp)
     end
+
+    #
+    # The "quote" subcommand sends arguments verbatim to the remote ftp server.
+    # The "literal" subcommand is an alias for "quote".
+    # @param arguments Array[String] to be sent verbatim to the remote ftp server
+    #
+    def quote(arguments)
+      voidcmd(arguments)
+    end
+    alias literal quote
 
     #
     # Removes a remote directory.
