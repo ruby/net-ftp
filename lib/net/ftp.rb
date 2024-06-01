@@ -77,6 +77,10 @@ module Net
   # - #rename
   # - #delete
   #
+  # == Mainframe User Support
+  # - #literal
+  # - #quote
+  #
   class FTP < Protocol
     include MonitorMixin
     if defined?(OpenSSL::SSL)
@@ -758,7 +762,7 @@ module Net
           ensure
             conn.close if conn
           end
-          voidresp
+          getresp # The response might be important when connected to a mainframe
         end
       end
     rescue Errno::EPIPE
@@ -880,13 +884,18 @@ module Net
     # in +remotefile+. If callback or an associated block is supplied, calls it,
     # passing in the transmitted data one line at a time.
     #
+    # Returns the response which will contain a job number if the user was communicating with a mainframe in ASCII mode
+    # after issuing 'quote site filetype=jes'
+    #
     def puttextfile(localfile, remotefile = File.basename(localfile), &block) # :yield: line
       f = File.open(localfile)
+      response = ''
       begin
-        storlines("STOR #{remotefile}", f, &block)
+        response = storlines("STOR #{remotefile}", f, &block)
       ensure
         f.close
       end
+      response
     end
 
     #
@@ -1225,6 +1234,16 @@ module Net
       resp = sendcmd("MKD #{dirname}")
       return parse257(resp)
     end
+
+    #
+    # The "quote" subcommand sends arguments verbatim to the remote ftp server.
+    # The "literal" subcommand is an alias for "quote".
+    # @param arguments Array[String] to be sent verbatim to the remote ftp server
+    #
+    def quote(arguments)
+      sendcmd(arguments)
+    end
+    alias literal quote
 
     #
     # Removes a remote directory.
