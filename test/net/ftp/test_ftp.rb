@@ -1953,7 +1953,7 @@ EOF
         assert_equal(nil, commands.shift)
         # FIXME: The new_session_cb is known broken for clients in OpenSSL 1.1.0h.
         # See https://github.com/openssl/openssl/pull/5967 for details.
-        if OpenSSL::OPENSSL_LIBRARY_VERSION !~ /OpenSSL 1.1.0h|LibreSSL/
+        if RUBY_ENGINE != "jruby" && OpenSSL::OPENSSL_LIBRARY_VERSION !~ /OpenSSL 1.1.0h|LibreSSL/
           assert_equal(true, session_reused_for_data_connection)
         end
       ensure
