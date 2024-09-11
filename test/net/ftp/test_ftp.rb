@@ -1834,7 +1834,7 @@ EOF
                          :port => port,
                          :ssl => true)
           rescue SystemCallError
-            skip $!
+            omit $!
           end
         end
       end
@@ -1848,7 +1848,7 @@ EOF
                          :port => port,
                          :ssl => { :ca_file => CA_FILE })
           rescue SystemCallError
-            skip $!
+            omit $!
           end
         end
       end
@@ -2270,7 +2270,7 @@ EOF
   end
 
   def test_getbinaryfile_command_injection
-    skip "| is not allowed in filename on Windows" if windows?
+    omit "| is not allowed in filename on Windows" if windows?
     [false, true].each do |resume|
       commands = []
       binary_data = (0..0xff).map {|i| i.chr}.join * 4 * 3
@@ -2323,7 +2323,7 @@ EOF
   end
 
   def test_gettextfile_command_injection
-    skip "| is not allowed in filename on Windows" if windows?
+    omit "| is not allowed in filename on Windows" if windows?
     commands = []
     text_data = <<EOF.gsub(/\n/, "\r\n")
 foo
@@ -2384,7 +2384,7 @@ EOF
   end
 
   def test_putbinaryfile_command_injection
-    skip "| is not allowed in filename on Windows" if windows?
+    omit "| is not allowed in filename on Windows" if windows?
     commands = []
     binary_data = (0..0xff).map {|i| i.chr}.join * 4 * 3
     received_data = nil
@@ -2432,7 +2432,7 @@ EOF
   end
 
   def test_puttextfile_command_injection
-    skip "| is not allowed in filename on Windows" if windows?
+    omit "| is not allowed in filename on Windows" if windows?
     commands = []
     received_data = nil
     server = create_ftp_server { |sock|
