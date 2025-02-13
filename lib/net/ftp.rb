@@ -1542,17 +1542,11 @@ module Net
     end
 
     if defined?(OpenSSL::SSL::SSLSocket)
-      class BufferedSSLSocket <  BufferedSocket
-        def initialize(*args, **options)
-          super
-          @is_shutdown = false
-        end
+      class BufferedSSLSocket < BufferedSocket
 
         def shutdown(*args)
-          # SSL_shutdown() will be called from SSLSocket#close, and
-          # SSL_shutdown() will send the "close notify" alert to the peer,
-          # so shutdown(2) should not be called.
-          @is_shutdown = true
+          # Invokes SSL_shutdown, which sends a close_notify message to the peer.
+          @io.__send__(:stop)
         end
 
         def send(mesg, flags, dest = nil)
@@ -1560,15 +1554,6 @@ module Net
           @io.write(mesg)
         end
 
-        private
-
-        def rbuf_fill
-          if @is_shutdown
-            raise EOFError, "shutdown has been called"
-          else
-            super
-          end
-        end
       end
     end
     # :startdoc:
