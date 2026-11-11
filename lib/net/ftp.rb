@@ -609,7 +609,7 @@ module Net
             raise FTPReplyError, resp
           end
           conn, = sock.accept
-          sock.shutdown(Socket::SHUT_WR) rescue nil
+          sock.close_write rescue nil
           sock.read rescue nil
         ensure
           sock.close
@@ -671,7 +671,7 @@ module Net
             while data = conn.read(blocksize)
               yield(data)
             end
-            conn.shutdown(Socket::SHUT_WR) rescue nil
+            conn.close_write rescue nil
             conn.read_timeout = 1
             conn.read rescue nil
           ensure
@@ -696,7 +696,7 @@ module Net
             while line = conn.gets
               yield(line.sub(/\r?\n\z/, ""), !line.match(/\n\z/).nil?)
             end
-            conn.shutdown(Socket::SHUT_WR) rescue nil
+            conn.close_write rescue nil
             conn.read_timeout = 1
             conn.read rescue nil
           ensure
@@ -725,7 +725,7 @@ module Net
               conn.write(buf)
               yield(buf) if block_given?
             end
-            conn.shutdown(Socket::SHUT_WR) rescue nil
+            conn.close_write rescue nil
             conn.read_timeout = 1
             conn.read rescue nil
           ensure
@@ -761,7 +761,7 @@ module Net
               conn.write(buf)
               yield(buf) if block_given?
             end
-            conn.shutdown(Socket::SHUT_WR) rescue nil
+            conn.close_write rescue nil
             conn.read_timeout = 1
             conn.read rescue nil
           ensure
@@ -1397,7 +1397,7 @@ module Net
     def close
       if @sock and not @sock.closed?
         begin
-          @sock.shutdown(Socket::SHUT_WR) rescue nil
+          @sock.close_write rescue nil
           orig, self.read_timeout = self.read_timeout, 3
           @sock.read rescue nil
         ensure
@@ -1507,7 +1507,7 @@ module Net
     end
 
     class BufferedSocket < BufferedIO
-      [:local_address, :remote_address, :addr, :peeraddr, :send, :shutdown].each do |method|
+      [:local_address, :remote_address, :addr, :peeraddr, :send, :close_write].each do |method|
         define_method(method) { |*args|
           @io.__send__(method, *args)
         }
@@ -1544,10 +1544,10 @@ module Net
     if defined?(OpenSSL::SSL::SSLSocket)
       class BufferedSSLSocket < BufferedSocket
 
-        def shutdown(*args)
+        def close_write
           # Invokes SSL_shutdown, which sends a close_notify message to the peer.
           @io.__send__(:stop)
-        end
+        end if OpenSSL::VERSION < "3.3" # openssl 3.3 = Ruby 3.4
 
         def send(mesg, flags, dest = nil)
           # Ignore flags and dest.
