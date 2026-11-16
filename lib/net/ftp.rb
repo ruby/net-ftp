@@ -404,8 +404,9 @@ module Net
       synchronize do
         @host = host
         @bare_sock = open_socket(host, port)
-        if @ssl_context
-          begin
+        succeeded = false
+        begin
+          if @ssl_context
             unless @implicit_ftps
               set_socket(BufferedSocket.new(@bare_sock, read_timeout: @read_timeout))
               voidcmd("AUTH TLS")
@@ -415,12 +416,12 @@ module Net
               voidcmd("PBSZ 0")
               voidcmd("PROT P")
             end
-          rescue OpenSSL::SSL::SSLError, OpenTimeout
-            @sock.close
-            raise
+          else
+            set_socket(BufferedSocket.new(@bare_sock, read_timeout: @read_timeout))
           end
-        else
-          set_socket(BufferedSocket.new(@bare_sock, read_timeout: @read_timeout))
+          succeeded = true
+        ensure
+          @bare_sock.close if !succeeded
         end
       end
     end
