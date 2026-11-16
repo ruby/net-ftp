@@ -1495,6 +1495,8 @@ EOF
       sock.print("213 20150910161739.123456789\r\n")
       commands.push(sock.gets)
       sock.print("213 2015091016173\r\n")
+      commands.push(sock.gets)
+      sock.print("200 20150910161739\r\n")
     }
     begin
       begin
@@ -1513,12 +1515,16 @@ EOF
         assert_raise(Net::FTPProtoError) do
           ftp.mtime("quux.txt")
         end
+        assert_raise(Net::FTPReplyError) do
+          ftp.mtime("baz.txt")
+        end
         assert_match("MDTM foo.txt\r\n", commands.shift)
         assert_match("MDTM foo.txt\r\n", commands.shift)
         assert_match("MDTM bar.txt\r\n", commands.shift)
         assert_match("MDTM bar.txt\r\n", commands.shift)
         assert_match("MDTM bar.txt\r\n", commands.shift)
         assert_match("MDTM quux.txt\r\n", commands.shift)
+        assert_match("MDTM baz.txt\r\n", commands.shift)
         assert_equal(nil, commands.shift)
       ensure
         ftp.close if ftp
