@@ -2,7 +2,6 @@
 
 require "net/ftp"
 require "test/unit"
-require "ostruct"
 require "stringio"
 
 class BufferedSocketTest < Test::Unit::TestCase
