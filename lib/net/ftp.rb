@@ -1229,7 +1229,11 @@ module Net
     # +true+, it is returned as a local time, otherwise it's a UTC time.
     #
     def mtime(filename, local = false)
-      return TIME_PARSER.(mdtm(filename), local)
+      value = mdtm(filename)
+      unless value
+        raise FTPReplyError, @last_response
+      end
+      return TIME_PARSER.(value, local)
     end
 
     #
