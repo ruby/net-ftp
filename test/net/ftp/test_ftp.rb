@@ -2,7 +2,6 @@
 
 require "net/ftp"
 require "test/unit"
-require "ostruct"
 require "stringio"
 require "tempfile"
 require "tmpdir"
@@ -70,6 +69,9 @@ class FTPTest < Test::Unit::TestCase
     end
   end
 
+  FakeSocket = Struct.new(:remote_address)
+  FakeAddress = Struct.new(:ip_address)
+
   def test_parse227
     ftp = Net::FTP.new(nil, use_pasv_ip: true)
     host, port = ftp.send(:parse227, "227 Entering Passive Mode (192,168,0,1,12,34)")
@@ -92,9 +94,7 @@ class FTPTest < Test::Unit::TestCase
     end
 
     ftp = Net::FTP.new
-    sock = OpenStruct.new
-    sock.remote_address = OpenStruct.new
-    sock.remote_address.ip_address = "10.0.0.1"
+    sock = FakeSocket.new(FakeAddress.new("10.0.0.1"))
     ftp.instance_variable_set(:@bare_sock, sock)
     host, port = ftp.send(:parse227, "227 Entering Passive Mode (192,168,0,1,12,34)")
     assert_equal("10.0.0.1", host)
@@ -102,9 +102,7 @@ class FTPTest < Test::Unit::TestCase
 
   def test_parse229
     ftp = Net::FTP.new
-    sock = OpenStruct.new
-    sock.remote_address = OpenStruct.new
-    sock.remote_address.ip_address = "1080:0000:0000:0000:0008:0800:200c:417a"
+    sock = FakeSocket.new(FakeAddress.new("1080:0000:0000:0000:0008:0800:200c:417a"))
     ftp.instance_variable_set(:@bare_sock, sock)
     host, port = ftp.send(:parse229, "229 Entering Passive Mode (|||3106|)")
     assert_equal("1080:0000:0000:0000:0008:0800:200c:417a", host)
