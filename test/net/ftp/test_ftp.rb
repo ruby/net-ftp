@@ -64,6 +64,7 @@ class FTPTest < Test::Unit::TestCase
     begin
       ftp = Net::FTP.new
       assert_raise(Net::FTPTempError){ ftp.connect(SERVER_ADDR, server.port) }
+      assert_predicate(ftp.instance_variable_get(:@bare_sock), :closed?)
     ensure
       ftp.close if ftp
       server.close
@@ -1873,6 +1874,35 @@ EOF
                        :port => port,
                        :ssl => { :ca_file => CA_FILE })
         end
+      end
+    end
+
+    def test_tls_auth_fail
+      server = create_ftp_server { |sock|
+        sock.print("220 (test_ftp).\r\n")
+        sock.gets
+        sock.print("502 Command not implemented.\r\n")
+      }
+      begin
+        ftp = Net::FTP.new(nil, ssl: true)
+        assert_raise(Net::FTPPermError) { ftp.connect(SERVER_ADDR, server.port) }
+        assert_predicate(ftp.instance_variable_get(:@bare_sock), :closed?)
+      ensure
+        ftp.close if ftp
+        server.close
+      end
+    end
+
+    def test_implicit_ftps_handshake_fail
+      server = TCPServer.new(SERVER_ADDR, 0)
+      @thread = Thread.start { server.accept.tap { |s| s.print("220 (test_ftp).\r\n") } }
+      begin
+        ftp = Net::FTP.new(nil, ssl: true, implicit_ftps: true)
+        assert_raise(OpenSSL::SSL::SSLError) { ftp.connect(SERVER_ADDR, server.addr[1]) }
+        assert_predicate(ftp.instance_variable_get(:@bare_sock), :closed?)
+      ensure
+        @thread.value.close
+        server.close
       end
     end
 
